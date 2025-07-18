@@ -1,38 +1,42 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UZEM Asistanı</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>UZEM Asistanı</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-    <div class="chat-container">
-        <div class="chat-header">
-            <img src="logo.png" alt="UZEM Logo" class="logo">
-        </div>
-        <div class="chat-messages" id="chat-messages">
-            <div class="message bot">
-                <p>Merhaba! Ben UZEM Asistanı. Size nasıl yardımcı olabilirim?</p>
-            </div>
-        </div>
-        <div id="feedback-container" style="display:none; text-align:center; margin:10px;">
-            <span>Bu cevap faydalı mı?</span>
-            <button onclick="sendFeedback('up')">👍</button>
-            <button onclick="sendFeedback('down')">👎</button>
-            <span id="feedback-status" style="margin-left:10px; color:green;"></span>
-        </div>
-        <div class="chat-input-area">
-            <input type="text" id="user-input" placeholder="Sorunuzu buraya yazın..." autocomplete="off">
-            <button id="send-button">→</button>
-        </div>
-        <div class="footer">
-            Öğr. Gör. Abdullah CİHAN
-        </div>
+  <div class="chat-container">
+    <div class="chat-header">
+      <img src="logo.png" alt="UZEM Logo" class="logo" />
     </div>
 
-    <script src="script.js"></script>
+    <div class="chat-messages" id="chat-messages">
+      <div class="message bot">
+        <p>Merhaba! Ben UZEM Asistanı. Size nasıl yardımcı olabilirim?</p>
+      </div>
+    </div>
 
+    <!-- Geri Bildirim Alanı -->
+    <div id="feedback-container" style="display:none; text-align:center; margin:10px;">
+      <span>Bu cevap faydalı mı?</span>
+      <button onclick="sendFeedback('up')">👍</button>
+      <button onclick="sendFeedback('down')">👎</button>
+      <span id="feedback-status" style="margin-left:10px; color:green;"></span>
+    </div>
+
+    <div class="chat-input-area">
+      <input type="text" id="user-input" placeholder="Sorunuzu buraya yazın..." autocomplete="off" />
+      <button id="send-button">→</button>
+    </div>
+
+    <div class="footer">
+      Öğr. Gör. Abdullah CİHAN
+    </div>
+  </div>
+
+  <script src="script.js"></script>
 </body>
 </html>
