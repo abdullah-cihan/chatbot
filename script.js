@@ -25,28 +25,38 @@ async function sendMessage() {
 
     appendMessage(userText, 'user');
     userInput.value = '';
-    hideFeedbackButtons();
+    hideFeedbackButtons(); // Yeni mesaj gelince önceki geri bildirim butonlarını gizle
 
     const loadingMessage = appendMessage('...', 'bot', true);
 
     try {
-        const response = await fetch(BASE_URL, {
+        const response = await fetch(CLOUD_FUNCTION_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ question: userText })
         });
 
-        if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
-
         const data = await response.json();
+
+        if (!response.ok) {
+            if (response.status === 429) {
+                updateLastBotMessage(loadingMessage, data.error || "Çok sık istek gönderildi. Lütfen biraz bekleyin.");
+            } else {
+                updateLastBotMessage(loadingMessage, data.error || "Bir hata oluştu.");
+            }
+            return;
+        }
+
         updateLastBotMessage(loadingMessage, data.answer || "Bir hata oluştu.");
         currentLogId = data.log_id || null;
         showFeedbackButtons();
+
     } catch (error) {
         console.error('Fetch Error:', error);
         updateLastBotMessage(loadingMessage, "Üzgünüm, bir bağlantı hatası oluştu.");
     }
 }
+
 
 // === Mesaj Ekleme ===
 function appendMessage(text, sender, isLoading = false) {
