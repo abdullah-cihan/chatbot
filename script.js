@@ -2,7 +2,7 @@ const chatMessages = document.getElementById('chat-messages');
 const userInput = document.getElementById('user-input');
 const sendButton = document.getElementById('send-button');
 
-const BASE_URL = 'https://uzem-chatbot-backend-745649787653.us-central1.run.app'; // Taban endpoint
+const BASE_URL = window.BACKEND_URL;
 let currentLogId = null;
 
 sendButton.addEventListener('click', sendMessage);
