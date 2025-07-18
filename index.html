@@ -17,6 +17,12 @@
                 <p>Merhaba! Ben UZEM Asistanı. Size nasıl yardımcı olabilirim?</p>
             </div>
         </div>
+        <div id="feedback-container" style="display:none; text-align:center; margin:10px;">
+            <span>Bu cevap faydalı mı?</span>
+            <button onclick="sendFeedback('up')">👍</button>
+            <button onclick="sendFeedback('down')">👎</button>
+            <span id="feedback-status" style="margin-left:10px; color:green;"></span>
+        </div>
         <div class="chat-input-area">
             <input type="text" id="user-input" placeholder="Sorunuzu buraya yazın..." autocomplete="off">
             <button id="send-button">→</button>
