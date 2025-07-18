@@ -26,12 +26,16 @@
       <button onclick="sendFeedback('down')">👎</button>
       <span id="feedback-status" style="margin-left:10px; color:green;"></span>
     </div>
+    
+    <div id="rate-limit-warning" style="display:none; color:red; text-align:center; margin-top:10px;">
+  Çok sık istek gönderildi. Lütfen <span id="countdown">5</span> saniye bekleyin.
+    </div>
 
     <div class="chat-input-area">
       <input type="text" id="user-input" placeholder="Sorunuzu buraya yazın..." autocomplete="off" />
       <button id="send-button">→</button>
     </div>
-
+    
     <div class="footer">
       Öğr. Gör. Abdullah CİHAN
     </div>
