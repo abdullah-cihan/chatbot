@@ -31,15 +31,18 @@ async function sendMessage() {
 
         if (!response.ok) {
             if (response.status === 429) {
-                // ❌ Balonu tamamen kaldır
-                if (loadingMessage) loadingMessage.remove();
-                showRateLimitCountdown(5);
+                const errData = await response.json();
+                const errorMsg = errData.error || "Çok sık istek gönderildi.";
+
+                updateLastBotMessage(loadingMessage, errorMsg);
+
+                if (!errorMsg.includes("günlük limitini aştı")) {
+                    showRateLimitCountdown(5);  // sadece spam engelleme ise sayaç başlat
+                }
                 return;
             }
-
             throw new Error(`HTTP error: ${response.status}`);
         }
-
         const data = await response.json();
         updateLastBotMessage(loadingMessage, data.answer || "Bir hata oluştu.");
     } catch (error) {
