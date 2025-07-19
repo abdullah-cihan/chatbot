@@ -32,14 +32,22 @@ async function sendMessage() {
         if (!response.ok) {
             if (response.status === 429) {
                 const errData = await response.json();
-                updateLastBotMessage(loadingMessage, errData.error);
+
+                // ⛔ Bot mesajını gösterme (loading mesajını sil)
+                if (loadingMessage && loadingMessage.parentNode) {
+                    loadingMessage.remove();
+                }
+
+                // 🔔 Sayaçlı uyarıyı göster
                 showRateLimitCountdown(5);
                 return;
             }
+
             throw new Error(`HTTP error: ${response.status}`);
         }
 
         const data = await response.json();
+        updateLastBotMessage(loadingMessage, data.answer || "Yanıt alınamadı.");
     } catch (error) {
         console.error('Fetch Error:', error);
         updateLastBotMessage(loadingMessage, "Üzgünüm, bir bağlantı hatası oluştu.");
