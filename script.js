@@ -8,7 +8,7 @@ const countdownSpan = document.getElementById("countdown");
 const remainingInfo = document.getElementById("remaining-info");
 
 sendButton.addEventListener('click', sendMessage);
-userInput.addEventListener('keypress', function(event) {
+userInput.addEventListener('keypress', function (event) {
     if (event.key === 'Enter') {
         sendMessage();
     }
@@ -33,20 +33,25 @@ async function sendMessage() {
         const data = await response.json();
 
         // Kalan sorgu hakkı varsa göster
-        if (data.remaining !== undefined) {
+        if (typeof data.remaining !== "undefined") {
             updateRemainingInfo(data.remaining);
         }
 
+        // Yanıt başarısızsa (örnek: 429 - rate limit)
         if (!response.ok) {
             const errorMsg = data.error || "Çok sık istek gönderildi.";
-            updateLastBotMessage(loadingMessage, errorMsg);
 
-            if (response.status === 429 && data.remaining > 0) {
-                showRateLimitCountdown(5); // 5 saniyelik limit için
+            // Eğer günlük kota dolmuşsa, farklı mesaj göster
+            if (data.remaining === 0) {
+                updateLastBotMessage(loadingMessage, "Günlük sorgu hakkınızı doldurdunuz. Lütfen yarın tekrar deneyiniz.");
+            } else {
+                updateLastBotMessage(loadingMessage, errorMsg);
+                showRateLimitCountdown(5); // Sadece geçici spam limiti ise sayaç göster
             }
             return;
         }
 
+        // Başarılı cevap
         updateLastBotMessage(loadingMessage, data.answer || "Bir hata oluştu.");
     } catch (error) {
         console.error('Fetch Error:', error);
@@ -103,7 +108,9 @@ function updateRemainingInfo(count) {
 
     if (count <= 5) {
         remainingInfo.style.color = 'red';
+        remainingInfo.style.fontWeight = 'bold';
     } else {
         remainingInfo.style.color = '#333';
+        remainingInfo.style.fontWeight = 'normal';
     }
 }
