@@ -29,14 +29,13 @@ async function sendMessage() {
             body: JSON.stringify({ question: userText })
         });
 
-
-        if (response.status === 429) {
-            const errData = await response.json();
-            updateLastBotMessage(loadingMessage, errData.error || "Çok sık istek gönderildi.");
-            showRateLimitCountdown(5);
-            return;
-        }
-
+        if (!response.ok) {
+            if (response.status === 429) {
+                // ❌ Balonu tamamen kaldır
+                if (loadingMessage) loadingMessage.remove();
+                showRateLimitCountdown(5);
+                return;
+            }
 
             throw new Error(`HTTP error: ${response.status}`);
         }
