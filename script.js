@@ -40,7 +40,6 @@ async function sendMessage() {
         }
 
         const data = await response.json();
-        updateLastBotMessage(loadingMessage, data.answer || "Bir hata oluştu.");
     } catch (error) {
         console.error('Fetch Error:', error);
         updateLastBotMessage(loadingMessage, "Üzgünüm, bir bağlantı hatası oluştu.");
