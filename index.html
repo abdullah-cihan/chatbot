@@ -3,59 +3,32 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>UZEM Asistanı</title>
+  <title>UZEM Chatbot</title>
   <link rel="stylesheet" href="style.css" />
-    <meta charset="UTF-8">
-    <title>UZEM Chatbot</title>
-    <style>
-        #chat-messages { height: 400px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px; }
-        .message { margin: 10px 0; }
-        .user { text-align: right; }
-        .bot { text-align: left; }
-        .feedback-buttons { margin-top: 5px; }
-    </style>
 </head>
 <body>
 
   <div class="chat-container">
-    <div class="chat-header">
-      <img src="logo.png" alt="UZEM Logo" class="logo" />
+    <div class="header">
+      <img src="logo.png" alt="UZEM Logo" />
     </div>
 
-    <div class="chat-messages" id="chat-messages">
-      <div class="message bot">
-        <p>Merhaba! Ben UZEM Asistanı. Size nasıl yardımcı olabilirim?</p>
-      </div>
+    <div id="chat-messages">
+      <div class="message bot">Merhaba! Ben UZEM Asistanı. Size nasıl yardımcı olabilirim?</div>
     </div>
-    <div id="chat-messages"></div>
 
-    <!-- Geri Bildirim Alanı -->
-    <div id="feedback-container" style="display:none; text-align:center; margin:10px;">
-      <span>Bu cevap faydalı mı?</span>
-      <button onclick="sendFeedback('up')">👍</button>
-      <button onclick="sendFeedback('down')">👎</button>
-      <span id="feedback-status" style="margin-left:10px; color:green;"></span>
+    <div id="rate-limit-warning">
+      Çok sık istek gönderildi. Lütfen <span id="countdown">5</span> saniye bekleyin.
     </div>
-    
-    <div id="rate-limit-warning" style="display:none; color:red; text-align:center; margin-top:10px;">
-  Çok sık istek gönderildi. Lütfen <span id="countdown">5</span> saniye bekleyin.
-    </div>
-    <input type="text" id="user-input" placeholder="Sorunuzu yazın..." />
-    <button id="send-button">Gönder</button>
 
-    <div class="chat-input-area">
-      <input type="text" id="user-input" placeholder="Sorunuzu buraya yazın..." autocomplete="off" />
-      <button id="send-button">→</button>
+    <div class="input-area">
+      <input type="text" id="user-input" placeholder="Sorunuzu buraya yazın..." />
+      <button id="send-button">&#10148;</button>
     </div>
-    
-    <div class="footer">
-      Öğr. Gör. Abdullah CİHAN
-    <div id="rate-limit-warning" style="display:none; color: red;">
-        Çok sık istek gönderildi. Lütfen <span id="countdown">5</span> saniye bekleyin.
-</div>
+
+    <footer>Öğr. Gör. Abdullah CİHAN</footer>
   </div>
 
   <script src="script.js"></script>
-    <script src="script.js"></script>
 </body>
 </html>
