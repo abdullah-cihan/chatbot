@@ -62,15 +62,22 @@ body {
 }
 
 /* Yükleniyor animasyonu */
-.message.loading p span {
+.message.bot.loading p span {
+    display: inline-block;
     animation: blink 1.4s infinite both;
     font-size: 24px;
+    margin: 0 2px;
     line-height: 0;
 }
-.message.loading p span:nth-child(2) { animation-delay: 0.2s; }
-.message.loading p span:nth-child(3) { animation-delay: 0.4s; }
-@keyframes blink { 0% { opacity: 0.2; } 20% { opacity: 1; } 100% { opacity: 0.2; } }
 
+.message.bot.loading p span:nth-child(2) { animation-delay: 0.2s; }
+.message.bot.loading p span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes blink {
+    0% { opacity: 0.2; }
+    20% { opacity: 1; }
+    100% { opacity: 0.2; }
+}
 
 .chat-input-area {
     display: flex;
@@ -103,9 +110,19 @@ body {
     justify-content: center;
     align-items: center;
 }
-#feedback-container button {
+
+#send-button:hover {
+    background-color: #0073e6;
+}
+
+.feedback-buttons {
+    text-align: center;
+    margin-top: -8px;
+}
+
+.feedback-buttons button {
     font-size: 18px;
-    margin: 0 8px;
+    margin: 4px 6px;
     padding: 6px 12px;
     border-radius: 6px;
     background-color: #e9e9eb;
@@ -114,12 +131,8 @@ body {
     transition: background-color 0.3s;
 }
 
-#feedback-container button:hover {
+.feedback-buttons button:hover {
     background-color: #d1d1d4;
-}
-
-#send-button:hover {
-    background-color: #0073e6;
 }
 
 .footer {
