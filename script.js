@@ -5,6 +5,7 @@ const userInput = document.getElementById('user-input');
 const sendButton = document.getElementById('send-button');
 const rateLimitWarning = document.getElementById("rate-limit-warning");
 const countdownSpan = document.getElementById("countdown");
+const remainingInfo = document.getElementById("remaining-info");
 
 sendButton.addEventListener('click', sendMessage);
 userInput.addEventListener('keypress', function(event) {
@@ -29,21 +30,23 @@ async function sendMessage() {
             body: JSON.stringify({ question: userText })
         });
 
-        if (!response.ok) {
-            if (response.status === 429) {
-                const errData = await response.json();
-                const errorMsg = errData.error || "Çok sık istek gönderildi.";
-
-                updateLastBotMessage(loadingMessage, errorMsg);
-
-                if (!errorMsg.includes("günlük limitini aştı")) {
-                    showRateLimitCountdown(5);  // sadece spam engelleme ise sayaç başlat
-                }
-                return;
-            }
-            throw new Error(`HTTP error: ${response.status}`);
-        }
         const data = await response.json();
+
+        // Kalan sorgu hakkı varsa göster
+        if (data.remaining !== undefined) {
+            updateRemainingInfo(data.remaining);
+        }
+
+        if (!response.ok) {
+            const errorMsg = data.error || "Çok sık istek gönderildi.";
+            updateLastBotMessage(loadingMessage, errorMsg);
+
+            if (response.status === 429 && data.remaining > 0) {
+                showRateLimitCountdown(5); // 5 saniyelik limit için
+            }
+            return;
+        }
+
         updateLastBotMessage(loadingMessage, data.answer || "Bir hata oluştu.");
     } catch (error) {
         console.error('Fetch Error:', error);
@@ -92,4 +95,15 @@ function showRateLimitCountdown(seconds = 5) {
             countdownSpan.textContent = remaining;
         }
     }, 1000);
+}
+
+function updateRemainingInfo(count) {
+    remainingInfo.style.display = 'block';
+    remainingInfo.textContent = `Kalan sorgu hakkınız: ${count}`;
+
+    if (count <= 5) {
+        remainingInfo.style.color = 'red';
+    } else {
+        remainingInfo.style.color = '#333';
+    }
 }
