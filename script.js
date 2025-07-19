@@ -32,7 +32,7 @@ async function sendMessage() {
         if (!response.ok) {
             if (response.status === 429) {
                 const errData = await response.json();
-                updateLastBotMessage(loadingMessage, errData.error || "Çok sık istek gönderildi.");
+                updateLastBotMessage(loadingMessage, errData.error);
                 showRateLimitCountdown(5);
                 return;
             }
