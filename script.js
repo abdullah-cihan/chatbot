@@ -87,36 +87,31 @@ function updateLastBotMessage(msgEl, newText) {
     }
 }
 
-// === Feedback Gönder ===
-function sendFeedback(type) {
-    if (!currentLogId) return;
-
-    fetch(BASE_URL + '/feedback', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ log_id: currentLogId, feedback: type })
-    })
-    .then(res => res.json())
-    .then(() => {
-        feedbackStatus.innerText = "Teşekkürler!";
-        hideFeedbackButtons();
-    })
-    .catch(err => {
-        console.error("Geri bildirim hatası:", err);
-        feedbackStatus.innerText = "Gönderilemedi.";
-    });
+function sendFeedback(logId, type) {
+  fetch("https://YOUR_BACKEND_URL/feedback", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ log_id: logId, feedback: type }),
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.status === "ok") {
+      // Butonları gizle
+      document.getElementById(`feedback-${logId}`).innerHTML = "Teşekkürler!";
+      localStorage.setItem(`voted_${logId}`, "1");
+    } else {
+      alert(data.error || "Zaten oy verdiniz.");
+    }
+  });
 }
 
-// === Geri Bildirim UI ===
-function showFeedbackButtons() {
-    feedbackContainer.style.display = "block";
-    feedbackStatus.innerText = "";
+// Sayfa yüklendiğinde önceden oy verildiyse butonları gizle
+function checkFeedbackStatus(logId) {
+  if (localStorage.getItem(`voted_${logId}`)) {
+    document.getElementById(`feedback-${logId}`).innerHTML = "Teşekkürler!";
+  }
 }
 
-function hideFeedbackButtons() {
-    feedbackContainer.style.display = "none";
-    feedbackStatus.innerText = "";
-}
 
 // === 429 Sayaç ===
 function showRateLimitCountdown(seconds = 5) {
