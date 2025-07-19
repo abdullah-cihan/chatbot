@@ -20,7 +20,7 @@ async function sendMessage() {
     appendMessage(userText, 'user');
     userInput.value = '';
 
-    const loadingMessage = appendMessage('...', 'bot', true);
+    let loadingMessage = null;
 
     try {
         const response = await fetch(BASE_URL, {
@@ -33,11 +33,6 @@ async function sendMessage() {
             if (response.status === 429) {
                 const errData = await response.json();
 
-                // ⛔ Bot mesajını gösterme (loading mesajını sil)
-                if (loadingMessage && loadingMessage.parentNode) {
-                    loadingMessage.remove();
-                }
-
                 // 🔔 Sayaçlı uyarıyı göster
                 showRateLimitCountdown(5);
                 return;
@@ -46,10 +41,19 @@ async function sendMessage() {
             throw new Error(`HTTP error: ${response.status}`);
         }
 
+        // ✅ Sadece başarılıysa loading göster (ve güncelle)
+        loadingMessage = appendMessage('...', 'bot', true);
+
         const data = await response.json();
         updateLastBotMessage(loadingMessage, data.answer || "Yanıt alınamadı.");
     } catch (error) {
         console.error('Fetch Error:', error);
+
+        if (loadingMessage === null) {
+            // Hata oluştuysa ve loading hiç yoksa yeni mesaj göster
+            loadingMessage = appendMessage('', 'bot');
+        }
+
         updateLastBotMessage(loadingMessage, "Üzgünüm, bir bağlantı hatası oluştu.");
     }
 }
