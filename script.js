@@ -31,11 +31,12 @@ async function sendMessage() {
 
 
         if (response.status === 429) {
-    // Loading mesajı varsa DOM'dan kaldır
-            if (loadingMessage) loadingMessage.remove();
+            const errData = await response.json();
+            updateLastBotMessage(loadingMessage, errData.error || "Çok sık istek gönderildi.");
             showRateLimitCountdown(5);
             return;
-            }
+        }
+
 
             throw new Error(`HTTP error: ${response.status}`);
         }
