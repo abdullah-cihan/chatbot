@@ -6,8 +6,6 @@ const sendButton = document.getElementById('send-button');
 const rateLimitWarning = document.getElementById("rate-limit-warning");
 const countdownSpan = document.getElementById("countdown");
 
-let currentLogId = null;
-
 sendButton.addEventListener('click', sendMessage);
 userInput.addEventListener('keypress', function(event) {
     if (event.key === 'Enter') {
@@ -21,7 +19,6 @@ async function sendMessage() {
 
     appendMessage(userText, 'user');
     userInput.value = '';
-    clearFeedbackUI();
 
     const loadingMessage = appendMessage('...', 'bot', true);
 
@@ -44,9 +41,6 @@ async function sendMessage() {
 
         const data = await response.json();
         updateLastBotMessage(loadingMessage, data.answer || "Bir hata oluştu.");
-        currentLogId = data.log_id || null;
-
-        if (currentLogId) renderFeedbackButtons(currentLogId);
     } catch (error) {
         console.error('Fetch Error:', error);
         updateLastBotMessage(loadingMessage, "Üzgünüm, bir bağlantı hatası oluştu.");
@@ -78,51 +72,6 @@ function updateLastBotMessage(msgEl, newText) {
         p.textContent = newText;
         msgEl.classList.remove('loading');
     }
-}
-
-function renderFeedbackButtons(logId) {
-    if (localStorage.getItem(`voted_${logId}`)) return;
-
-    const wrapper = document.createElement('div');
-    wrapper.id = `feedback-${logId}`;
-    wrapper.className = 'feedback-buttons';
-
-    const upBtn = document.createElement('button');
-    upBtn.textContent = '👍';
-    upBtn.onclick = () => sendFeedback(logId, 'up');
-
-    const downBtn = document.createElement('button');
-    downBtn.textContent = '👎';
-    downBtn.onclick = () => sendFeedback(logId, 'down');
-
-    wrapper.appendChild(upBtn);
-    wrapper.appendChild(downBtn);
-
-    chatMessages.appendChild(wrapper);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-}
-
-function sendFeedback(logId, type) {
-    fetch(`${BASE_URL}/feedback`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ log_id: logId, feedback: type }),
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.status === "ok") {
-            const fb = document.getElementById(`feedback-${logId}`);
-            if (fb) fb.textContent = "Teşekkürler!";
-            localStorage.setItem(`voted_${logId}`, "1");
-        } else {
-            alert(data.error || "Zaten oy verdiniz.");
-        }
-    });
-}
-
-function clearFeedbackUI() {
-    const elems = document.querySelectorAll(".feedback-buttons");
-    elems.forEach(el => el.remove());
 }
 
 function showRateLimitCountdown(seconds = 5) {
