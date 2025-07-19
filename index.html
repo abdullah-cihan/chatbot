@@ -12,12 +12,31 @@
     <div class="chat-header">
       <img src="logo.png" alt="UZEM Logo" class="logo" />
     </div>
-  <div id="remaining-info" style="margin-top: 10px; display: none; font-weight: bold;"></div>
+
     <div id="chat-messages" class="chat-messages">
       <div class="message bot">Merhaba! Ben UZEM Asistanı. Size nasıl yardımcı olabilirim?</div>
     </div>
 
-    <div id="rate-limit-warning" style="display: none; padding: 5px 10px; color: red; text-align: center;">
+    <!-- Kalan sorgu bilgisi -->
+    <div id="remaining-info" style="
+      display: none;
+      font-size: 14px;
+      color: #555;
+      font-weight: 500;
+      text-align: right;
+      margin: 8px 12px 0 0;
+    ">
+      <!-- İçerik script.js'ten yazılır -->
+    </div>
+
+    <!-- Rate limit uyarısı -->
+    <div id="rate-limit-warning" style="
+      display: none;
+      padding: 5px 10px;
+      color: red;
+      text-align: center;
+      font-weight: bold;
+    ">
       Çok sık istek gönderildi. Lütfen <span id="countdown">5</span> saniye bekleyin.
     </div>
 
@@ -28,7 +47,6 @@
 
     <footer class="footer">Öğr. Gör. Abdullah CİHAN</footer>
   </div>
-  
 
   <script src="script.js"></script>
 </body>
