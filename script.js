@@ -14,8 +14,8 @@ userInput.addEventListener('keypress', function (event) {
     }
 });
 
-async function sendMessage() {
-    const userText = userInput.value.trim();
+async function sendMessage(inputText = null) {
+    const userText = inputText || userInput.value.trim();
     if (userText === '') return;
 
     appendMessage(userText, 'user');
@@ -32,26 +32,22 @@ async function sendMessage() {
 
         const data = await response.json();
 
-        // Kalan sorgu hakkı varsa göster
         if (typeof data.remaining !== "undefined") {
             updateRemainingInfo(data.remaining);
         }
 
-        // Yanıt başarısızsa (örnek: 429 - rate limit)
         if (!response.ok) {
             const errorMsg = data.error || "Çok sık istek gönderildi.";
 
-            // Eğer günlük kota dolmuşsa, farklı mesaj göster
             if (data.remaining === 0) {
-                updateLastBotMessage(loadingMessage, "Günlük sorgu hakkınızı doldurdunuz. Lütfen yarın tekrar deneyiniz.");
+                updateLastBotMessage(loadingMessage, "🛑 Günlük sorgu hakkınızı doldurdunuz. Lütfen yarın tekrar deneyiniz.");
             } else {
                 updateLastBotMessage(loadingMessage, errorMsg);
-                showRateLimitCountdown(5); // Sadece geçici spam limiti ise sayaç göster
+                showRateLimitCountdown(5);
             }
             return;
         }
 
-        // Başarılı cevap
         updateLastBotMessage(loadingMessage, data.answer || "Bir hata oluştu.");
     } catch (error) {
         console.error('Fetch Error:', error);
@@ -72,6 +68,16 @@ function appendMessage(text, sender, isLoading = false) {
     }
 
     wrapper.appendChild(p);
+
+    // Düzenleme düğmesi sadece kullanıcı mesajlarında görünür
+    if (sender === 'user' && !isLoading) {
+        const editBtn = document.createElement('button');
+        editBtn.className = 'edit-btn';
+        editBtn.textContent = '✏️';
+        editBtn.onclick = () => enableEdit(wrapper, text);
+        wrapper.appendChild(editBtn);
+    }
+
     chatMessages.appendChild(wrapper);
     chatMessages.scrollTop = chatMessages.scrollHeight;
     return wrapper;
@@ -113,4 +119,41 @@ function updateRemainingInfo(count) {
         remainingInfo.style.color = '#333';
         remainingInfo.style.fontWeight = 'normal';
     }
+}
+
+// Kullanıcı mesajını düzenleme işlemi
+function enableEdit(messageDiv, oldText) {
+    const p = messageDiv.querySelector("p");
+    const editBtn = messageDiv.querySelector(".edit-btn");
+
+    const input = document.createElement("input");
+    input.type = "text";
+    input.value = oldText;
+    input.className = "edit-input";
+
+    const saveBtn = document.createElement("button");
+    saveBtn.textContent = "Kaydet";
+    saveBtn.onclick = () => {
+        const newText = input.value.trim();
+        if (newText && newText !== oldText) {
+            p.textContent = newText;
+            messageDiv.removeChild(input);
+            messageDiv.removeChild(saveBtn);
+            editBtn.style.display = "inline";
+            userInput.value = newText;
+            sendMessage(newText);
+        } else {
+            p.textContent = oldText;
+            messageDiv.removeChild(input);
+            messageDiv.removeChild(saveBtn);
+            editBtn.style.display = "inline";
+        }
+    };
+
+    // Düzenleme moduna geç
+    p.textContent = "";
+    editBtn.style.display = "none";
+    messageDiv.appendChild(input);
+    messageDiv.appendChild(saveBtn);
+    input.focus();
 }
