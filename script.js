@@ -14,12 +14,12 @@ userInput.addEventListener('keypress', function (event) {
     }
 });
 
-async function sendMessage(inputText = null, userMsgEl = null, botMsgEl = null) {
+async function sendMessage(inputText = null, userMsgEl = null, botMsgEl = null, logId = null) {
     const userText = inputText || userInput.value.trim();
     if (userText === '') return;
 
     if (!userMsgEl) {
-        userMsgEl = appendMessage(userText, 'user');
+        userMsgEl = appendMessage(userText, 'user', false, logId);
     }
 
     if (!botMsgEl) {
@@ -36,7 +36,10 @@ async function sendMessage(inputText = null, userMsgEl = null, botMsgEl = null) 
         const response = await fetch(BASE_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ question: userText })
+            body: JSON.stringify({
+                question: userText,
+                log_id: logId || null
+            })
         });
 
         const data = await response.json();
@@ -60,15 +63,23 @@ async function sendMessage(inputText = null, userMsgEl = null, botMsgEl = null) 
         }
 
         updateLastBotMessage(botMsgEl, data.answer || "Bir hata oluştu.");
+
+        if (data.log_id) {
+            userMsgEl.dataset.logId = data.log_id;
+        }
+
     } catch (error) {
         console.error('Fetch Error:', error);
         updateLastBotMessage(botMsgEl, "Üzgünüm, bir bağlantı hatası oluştu.");
     }
 }
 
-function appendMessage(text, sender, isLoading = false, returnBoth = false) {
+
+function appendMessage(text, sender, isLoading = false, logId = null) {
     const wrapper = document.createElement('div');
     wrapper.classList.add('message', sender);
+    wrapper.dataset.prompt = text;  // prompt saklanıyor
+    if (logId) wrapper.dataset.logId = logId;  // log_id saklanıyor
 
     const p = document.createElement('p');
     if (isLoading) {
@@ -84,16 +95,15 @@ function appendMessage(text, sender, isLoading = false, returnBoth = false) {
         const editBtn = document.createElement('button');
         editBtn.className = 'edit-btn';
         editBtn.textContent = '✏️';
-        editBtn.onclick = () => enableEdit(wrapper, text);
+        editBtn.onclick = () => enableEdit(wrapper);
         wrapper.appendChild(editBtn);
     }
 
     chatMessages.appendChild(wrapper);
     chatMessages.scrollTop = chatMessages.scrollHeight;
-
-    if (returnBoth) return [wrapper, p];
     return wrapper;
 }
+
 
 function updateLastBotMessage(msgEl, newText) {
     if (msgEl && msgEl.classList.contains('loading')) {
@@ -133,8 +143,10 @@ function updateRemainingInfo(count) {
     }
 }
 
-function enableEdit(userDiv, oldText) {
+function enableEdit(userDiv) {
     const p = userDiv.querySelector("p");
+    const oldText = userDiv.dataset.prompt || p.textContent;
+    const logId = userDiv.dataset.logId || null;
     const editBtn = userDiv.querySelector(".edit-btn");
 
     const input = document.createElement("input");
@@ -149,12 +161,13 @@ function enableEdit(userDiv, oldText) {
         const newText = input.value.trim();
         if (newText && newText !== oldText) {
             p.textContent = newText;
+            userDiv.dataset.prompt = newText;
             userDiv.removeChild(input);
             userDiv.removeChild(saveBtn);
             editBtn.style.display = "inline";
 
             const botMsgEl = userDiv.nextElementSibling;
-            sendMessage(newText, userDiv, botMsgEl);
+            sendMessage(newText, userDiv, botMsgEl, logId);
         } else {
             userDiv.removeChild(input);
             userDiv.removeChild(saveBtn);
