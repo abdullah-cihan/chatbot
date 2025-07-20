@@ -14,6 +14,68 @@ userInput.addEventListener('keypress', function (event) {
     }
 });
 
+async function sendMessage(inputText = null, userMsgEl = null, botMsgEl = null, logId = null) {
+    const userText = inputText || userInput.value.trim();
+    if (userText === '') return;
+
+    if (!userMsgEl) {
+        userMsgEl = appendMessage(userText, 'user');
+    }
+
+    if (!botMsgEl) {
+        botMsgEl = appendMessage('...', 'bot', true);
+    } else {
+        botMsgEl.classList.add('loading');
+        const p = botMsgEl.querySelector('p');
+        p.innerHTML = '<span>.</span><span>.</span><span>.</span>';
+    }
+
+    userInput.value = '';
+
+    try {
+        const response = await fetch(BASE_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                question: userText,
+                log_id: logId || userMsgEl?.dataset?.logId || null  // ✅ otomatik log_id alma
+            })
+        });
+
+        const data = await response.json();
+
+        if (typeof data.remaining !== "undefined") {
+            updateRemainingInfo(data.remaining);
+        }
+
+        if (!response.ok) {
+            const errorMsg = data.error || "Çok sık istek gönderildi.";
+            const msg = data.remaining === 0
+                ? "🛑 Günlük sorgu hakkınızı doldurdunuz. Lütfen yarın tekrar deneyiniz."
+                : errorMsg;
+
+            updateLastBotMessage(botMsgEl, msg);
+
+            if (data.remaining > 0) {
+                showRateLimitCountdown(5);
+            }
+            return;
+        }
+
+        updateLastBotMessage(botMsgEl, data.answer || "Bir hata oluştu.");
+
+        if (data.log_id) {
+            // ✅ logId’yi hem user mesajına hem bot cevabına ata
+            userMsgEl.dataset.logId = data.log_id;
+            botMsgEl.dataset.logId = data.log_id;
+        }
+
+    } catch (error) {
+        console.error('Fetch Error:', error);
+        updateLastBotMessage(botMsgEl, "Üzgünüm, bir bağlantı hatası oluştu.");
+    }
+}
+
 
 
 function appendMessage(text, sender, isLoading = false, logId = null) {
