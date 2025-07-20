@@ -14,65 +14,6 @@ userInput.addEventListener('keypress', function (event) {
     }
 });
 
-async function sendMessage(inputText = null, userMsgEl = null, botMsgEl = null, logId = null) {
-    const userText = inputText || userInput.value.trim();
-    if (userText === '') return;
-
-    if (!userMsgEl) {
-        userMsgEl = appendMessage(userText, 'user', false, logId);
-    }
-
-    if (!botMsgEl) {
-        botMsgEl = appendMessage('...', 'bot', true);
-    } else {
-        botMsgEl.classList.add('loading');
-        const p = botMsgEl.querySelector('p');
-        p.innerHTML = '<span>.</span><span>.</span><span>.</span>';
-    }
-
-    userInput.value = '';
-
-    try {
-        const response = await fetch(BASE_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                question: userText,
-                log_id: logId || null
-            })
-        });
-
-        const data = await response.json();
-
-        if (typeof data.remaining !== "undefined") {
-            updateRemainingInfo(data.remaining);
-        }
-
-        if (!response.ok) {
-            const errorMsg = data.error || "Çok sık istek gönderildi.";
-            const msg = data.remaining === 0
-                ? "🛑 Günlük sorgu hakkınızı doldurdunuz. Lütfen yarın tekrar deneyiniz."
-                : errorMsg;
-
-            updateLastBotMessage(botMsgEl, msg);
-
-            if (data.remaining > 0) {
-                showRateLimitCountdown(5);
-            }
-            return;
-        }
-
-        updateLastBotMessage(botMsgEl, data.answer || "Bir hata oluştu.");
-
-        if (data.log_id) {
-            userMsgEl.dataset.logId = data.log_id;
-        }
-
-    } catch (error) {
-        console.error('Fetch Error:', error);
-        updateLastBotMessage(botMsgEl, "Üzgünüm, bir bağlantı hatası oluştu.");
-    }
-}
 
 
 function appendMessage(text, sender, isLoading = false, logId = null) {
@@ -156,19 +97,26 @@ function enableEdit(userDiv) {
 
     const saveBtn = document.createElement("button");
     saveBtn.textContent = "Kaydet";
+    saveBtn.className = "save-btn";
 
     saveBtn.onclick = () => {
         const newText = input.value.trim();
+
+        // Eğer değişiklik yapıldıysa güncelle
         if (newText && newText !== oldText) {
             p.textContent = newText;
             userDiv.dataset.prompt = newText;
-            userDiv.removeChild(input);
-            userDiv.removeChild(saveBtn);
             editBtn.style.display = "inline";
 
+            // input ve butonları temizle
+            userDiv.removeChild(input);
+            userDiv.removeChild(saveBtn);
+
+            // Bot cevabını yeniden üretmek için mevcut bot mesajı alınır
             const botMsgEl = userDiv.nextElementSibling;
             sendMessage(newText, userDiv, botMsgEl, logId);
         } else {
+            // Eski haline döndür
             userDiv.removeChild(input);
             userDiv.removeChild(saveBtn);
             p.textContent = oldText;
@@ -176,9 +124,11 @@ function enableEdit(userDiv) {
         }
     };
 
+    // Mevcut yazıyı temizle ve düzenleme alanını göster
     p.textContent = "";
     editBtn.style.display = "none";
     userDiv.appendChild(input);
     userDiv.appendChild(saveBtn);
     input.focus();
 }
+
