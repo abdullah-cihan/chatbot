@@ -7,21 +7,30 @@ const rateLimitWarning = document.getElementById("rate-limit-warning");
 const countdownSpan = document.getElementById("countdown");
 const remainingInfo = document.getElementById("remaining-info");
 
-sendButton.addEventListener('click', sendMessage);
+sendButton.addEventListener('click', () => sendMessage());
 userInput.addEventListener('keypress', function (event) {
     if (event.key === 'Enter') {
         sendMessage();
     }
 });
 
-async function sendMessage(inputText = null) {
+async function sendMessage(inputText = null, userMsgEl = null, botMsgEl = null) {
     const userText = inputText || userInput.value.trim();
     if (userText === '') return;
 
-    appendMessage(userText, 'user');
-    userInput.value = '';
+    if (!userMsgEl) {
+        userMsgEl = appendMessage(userText, 'user');
+    }
 
-    const loadingMessage = appendMessage('...', 'bot', true);
+    if (!botMsgEl) {
+        botMsgEl = appendMessage('...', 'bot', true);
+    } else {
+        botMsgEl.classList.add('loading');
+        const p = botMsgEl.querySelector('p');
+        p.innerHTML = '<span>.</span><span>.</span><span>.</span>';
+    }
+
+    userInput.value = '';
 
     try {
         const response = await fetch(BASE_URL, {
@@ -38,24 +47,26 @@ async function sendMessage(inputText = null) {
 
         if (!response.ok) {
             const errorMsg = data.error || "Çok sık istek gönderildi.";
+            const msg = data.remaining === 0
+                ? "🛑 Günlük sorgu hakkınızı doldurdunuz. Lütfen yarın tekrar deneyiniz."
+                : errorMsg;
 
-            if (data.remaining === 0) {
-                updateLastBotMessage(loadingMessage, "🛑 Günlük sorgu hakkınızı doldurdunuz. Lütfen yarın tekrar deneyiniz.");
-            } else {
-                updateLastBotMessage(loadingMessage, errorMsg);
+            updateLastBotMessage(botMsgEl, msg);
+
+            if (data.remaining > 0) {
                 showRateLimitCountdown(5);
             }
             return;
         }
 
-        updateLastBotMessage(loadingMessage, data.answer || "Bir hata oluştu.");
+        updateLastBotMessage(botMsgEl, data.answer || "Bir hata oluştu.");
     } catch (error) {
         console.error('Fetch Error:', error);
-        updateLastBotMessage(loadingMessage, "Üzgünüm, bir bağlantı hatası oluştu.");
+        updateLastBotMessage(botMsgEl, "Üzgünüm, bir bağlantı hatası oluştu.");
     }
 }
 
-function appendMessage(text, sender, isLoading = false) {
+function appendMessage(text, sender, isLoading = false, returnBoth = false) {
     const wrapper = document.createElement('div');
     wrapper.classList.add('message', sender);
 
@@ -69,7 +80,6 @@ function appendMessage(text, sender, isLoading = false) {
 
     wrapper.appendChild(p);
 
-    // Düzenleme düğmesi sadece kullanıcı mesajlarında görünür
     if (sender === 'user' && !isLoading) {
         const editBtn = document.createElement('button');
         editBtn.className = 'edit-btn';
@@ -80,6 +90,8 @@ function appendMessage(text, sender, isLoading = false) {
 
     chatMessages.appendChild(wrapper);
     chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    if (returnBoth) return [wrapper, p];
     return wrapper;
 }
 
@@ -121,10 +133,9 @@ function updateRemainingInfo(count) {
     }
 }
 
-// Kullanıcı mesajını düzenleme işlemi
-function enableEdit(messageDiv, oldText) {
-    const p = messageDiv.querySelector("p");
-    const editBtn = messageDiv.querySelector(".edit-btn");
+function enableEdit(userDiv, oldText) {
+    const p = userDiv.querySelector("p");
+    const editBtn = userDiv.querySelector(".edit-btn");
 
     const input = document.createElement("input");
     input.type = "text";
@@ -133,27 +144,28 @@ function enableEdit(messageDiv, oldText) {
 
     const saveBtn = document.createElement("button");
     saveBtn.textContent = "Kaydet";
+
     saveBtn.onclick = () => {
         const newText = input.value.trim();
         if (newText && newText !== oldText) {
             p.textContent = newText;
-            messageDiv.removeChild(input);
-            messageDiv.removeChild(saveBtn);
+            userDiv.removeChild(input);
+            userDiv.removeChild(saveBtn);
             editBtn.style.display = "inline";
-            userInput.value = newText;
-            sendMessage(newText);
+
+            const botMsgEl = userDiv.nextElementSibling;
+            sendMessage(newText, userDiv, botMsgEl);
         } else {
+            userDiv.removeChild(input);
+            userDiv.removeChild(saveBtn);
             p.textContent = oldText;
-            messageDiv.removeChild(input);
-            messageDiv.removeChild(saveBtn);
             editBtn.style.display = "inline";
         }
     };
 
-    // Düzenleme moduna geç
     p.textContent = "";
     editBtn.style.display = "none";
-    messageDiv.appendChild(input);
-    messageDiv.appendChild(saveBtn);
+    userDiv.appendChild(input);
+    userDiv.appendChild(saveBtn);
     input.focus();
 }
